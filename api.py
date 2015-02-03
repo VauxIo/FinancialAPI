@@ -1,4 +1,7 @@
+import falcon
+import json
 from peewee import *
+from wsgiref import simple_server
 
 db = SqliteDatabase('data.db')
 
@@ -26,3 +29,19 @@ class Record(Model):
 
 db.connect()
 db.create_tables([Company,Record], safe=True)
+
+class TickerCollection:
+
+    def on_get(self, req, resp):
+
+        tickers = [company.ticker for company in Company.select()]
+
+        resp.body = json.dumps(tickers)
+
+app = falcon.API()
+app.add_route('/tickers/', TickerCollection())
+
+if __name__ == '__main__':
+
+    httpd = simple_server.make_server('127.0.0.1', 8000, app)
+    httpd.serve_forever()
