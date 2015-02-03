@@ -38,8 +38,28 @@ class TickerCollection:
 
         resp.body = json.dumps(tickers)
 
+class TickerInstance:
+
+    def on_get(self, req, resp, ticker):
+
+        data = {}
+        company = Company.get(Company.ticker == ticker)
+
+        for r in company.records:
+
+            data[str(r.date)] = {
+                'high': float(r.high),
+                'low': float(r.low),
+                'last_price': float(r.last_price),
+                'open': float(r.open),
+                'px_last': float(r.px_last)
+            }
+
+        resp.body = json.dumps(data)
+
 app = falcon.API()
 app.add_route('/tickers/', TickerCollection())
+app.add_route('/tickers/{ticker}/', TickerInstance())
 
 if __name__ == '__main__':
 
