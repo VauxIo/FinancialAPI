@@ -43,24 +43,24 @@ class TickerInstance:
 
     def on_get(self, req, resp, ticker):
 
-        response = {'ticker': ticker}
+        response = {'ticker': ticker, 'data': {}}
 
-        data = {}
-        company = Company.get(Company.ticker == ticker)
+        try:
+            company = Company.get(Company.ticker == ticker)
 
-        for r in company.records:
+            for r in company.records:
 
-            data[str(r.date)] = {
-                'high': float(r.high),
-                'low': float(r.low),
-                'last_price': float(r.last_price),
-                'open': float(r.open),
-                'px_last': float(r.px_last)
-            }
+                response['data'][str(r.date)] = {
+                    'high': float(r.high),
+                    'low': float(r.low),
+                    'last_price': float(r.last_price),
+                    'open': float(r.open),
+                    'px_last': float(r.px_last)
+                }
 
-        response['data'] = data
-
-        resp.body = json.dumps(response)
+            resp.body = json.dumps(response)
+        except Company.DoesNotExist:
+            resp.status = falcon.HTTP_404
 
 app = falcon.API()
 app.add_route('/tickers/', TickerCollection())
